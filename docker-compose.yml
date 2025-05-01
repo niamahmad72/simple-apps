@@ -3,7 +3,7 @@ name: simple-niam
 services:
  
   app:
-    image: niam/simple-niam
+    image: niamahmad72/simple-niam
     build: ./app
     ports:
       - "3000:3000"

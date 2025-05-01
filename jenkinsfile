@@ -1,0 +1,53 @@
+pipeline {
+    agent { label 'server1-niam' }
+
+    stages {
+        stage('Pull SCM') {
+            steps {
+                git branch: 'main', url: 'https://github.com/niamahmad72/simple-apps.git'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh'''
+                cd app
+                npm install
+                '''
+            }
+        }
+        
+        stage('Testing') {
+            steps {
+                sh'''
+                cd app
+                APP_PORT=3001 npm test
+                APP_PORT=3001 npm run test:coverage
+                '''
+            }
+        }
+        
+        stage('Code Review') {
+            steps {
+                sh'''
+                cd app
+                sonar-scanner -Dsonar.projectKey=simple-apps  -Dsonar.sources=.  -Dsonar.host.url=http://172.23.9.11:9000  -Dsonar.login=sqp_0d1914eca4e63f5ad8f564bc70173c7716222ee9
+                '''
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                sh'''
+                docker compose up --build -d
+                '''
+            }
+        }
+        
+        stage('Backup') {
+            steps {
+                 sh 'docker compose push' 
+            }
+        }
+    }
+}
